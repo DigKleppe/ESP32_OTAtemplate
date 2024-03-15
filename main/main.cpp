@@ -24,7 +24,6 @@
 #include "updateTask.h"
 #include <esp_err.h>
 
-
 esp_err_t init_spiffs(void);
 TaskHandle_t connectTaskh;
 
@@ -61,6 +60,13 @@ extern "C" void app_main(void) {
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 
 	loadSettings();
+
+	while (1) {
+
+		vTaskDelay(1000);
+	}
+
+
 	xTaskCreate(&blinkTask, "blink", 8192, NULL, 5, NULL);
 
 	wifiConnect();

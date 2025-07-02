@@ -1,0 +1,25 @@
+[ req ]
+prompt              = no
+default_bits        = 2048
+distinguished_name  = req_distinguished_name
+req_extensions      = v3_req
+x509_extensions     = v3_ca
+
+[ req_distinguished_name ]
+C                   = NL
+ST                  = Noord-Holland
+L                   = Amsterdam
+O                   = JouwBedrijf
+CN                  = Jouw Root CA
+
+[ v3_req ]
+basicConstraints     = CA:TRUE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+keyUsage             = critical, keyCertSign, cRLSign
+
+[ v3_ca ]
+subjectAltName       = @alt_names
+
+[ alt_names ]
+IP.1                = 85.215.168.155  # Vervang met jouw IP

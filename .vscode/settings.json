@@ -1,0 +1,8 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPath": "/home/dig/esp/esp-idf-v5.4.1",
+  "idf.toolsPath": "/home/dig/.espressif",
+  "idf.pythonInstallPath": "/usr/bin/python3",
+  "idf.port": "/dev/ttyACM0",
+  "idf.flashType": "UART"
+}

@@ -72,6 +72,9 @@ void getNewVersionTask(void *pvParameter) {
 			}
 		}
 	}
+	else {
+		ESP_LOGE(TAG, "Timeout reading new version info: %s", BINARY_INFO_FILENAME);
+	}
 
 	while (mssg.len > 0) { // wait for httpsGetRequestTask to finish
 		xQueueSend(httpsReqRdyMssgBox, &mssg, 0);

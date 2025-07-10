@@ -130,8 +130,8 @@ void updateTask(void *pvParameter) {
 			} else
 				ESP_LOGI(TAG, "Update SPIFFS failed!");
 		}
-	//	vTaskDelay(CONFIG_CHECK_FIRMWARWE_UPDATE_INTERVAL / portTICK_PERIOD_MS);
-		vTaskDelay(10000 / portTICK_PERIOD_MS);
+		vTaskDelay(CONFIG_CHECK_FIRMWARWE_UPDATE_INTERVAL * 60 * 60 * 1000 / portTICK_PERIOD_MS);
+	//	vTaskDelay(10000 / portTICK_PERIOD_MS);
 	}
 }
 

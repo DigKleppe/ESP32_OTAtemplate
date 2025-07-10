@@ -31,6 +31,8 @@ TaskHandle_t connectTaskh;
 #define BLINK_GPIO	GPIO_NUM_4
 static const char *TAG = "main";
 
+extern const char server_root_cert_pem_start[] asm("_binary_ca_cert_pem_start");  // dummy , to pull in for linker
+const char * dummy;
 
 static void blinkTask(void *pvParameter) {
 
@@ -49,6 +51,7 @@ static void blinkTask(void *pvParameter) {
 extern "C" void app_main(void) {
 	esp_err_t err;
 	TaskHandle_t updateTaskh;
+	dummy = server_root_cert_pem_start;
 
 	ESP_LOGI(TAG, "OTA template started\n\n");
 
@@ -61,14 +64,8 @@ extern "C" void app_main(void) {
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 
 	loadSettings();
-	strcpy( wifiSettings.SSID, "Klepnet");
-	strcpy( wifiSettings.pwd, "Yellowstone1999");
 
-	strcpy(wifiSettings.upgradeServer, "digkleppe.nl" );
-	strcpy(wifiSettings.upgradeURL, "https://digkleppe.nl/firmware/OTA");
-	strcpy(wifiSettings.upgradeFileName,"ESP32_OTAtemplate.bin");
-
-	//strcpy(wifiSettings.firmwareVersion,"xxx");
+//	strcpy( wifiSettings.SSID, "xxx");
 
 	xTaskCreate(&blinkTask, "blink", 8192, NULL, 5, NULL);
 
@@ -82,21 +79,10 @@ extern "C" void app_main(void) {
 	// do {
 	// 	vTaskDelay(100);
 	// } while (!clockSynced);
-
 	
 	xTaskCreate(&updateTask, "updateTask",2* 8192, NULL, 5, &updateTaskh);
 
 	while (1) {
-//		newStorageVersion[0] = 0;
-//		spiffsUpdateFinised = true;
-//		xTaskCreate(&updateSpiffsTask, "updateSpiffsTask", 8192, (void*) newStorageVersion, 5, NULL);
-//		while (!spiffsUpdateFinised)
-//			vTaskDelay(1000);
-//
-//		if (newStorageVersion[0]) {
-//			strcpy(userSettings.spiffsVersion, newStorageVersion);
-//			saveSettings();
-//		}
 		vTaskDelay(100000);
 	}
 }

@@ -3,7 +3,7 @@
 
 Template for ESP32 apps that can be updated over the air
 
-The binaries for the app and for the spiffs embedded webpages (if any) are hosted on a https sever, in my case on github pages.
+The binaries for the app and for the spiffs embedded webpages (if any) are hosted on a https sever
 The folder containg the binairies must als contain textfiles with the version number of the (new) software.
 These files (firmWareVersion.txt for the app and storageVersion.txt for the website) are read.
 If the version differ from the present version:

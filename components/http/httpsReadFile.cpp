@@ -32,7 +32,6 @@ QueueHandle_t httpsReqRdyMssgBox;
 #define MAX_HTTP_RECV_BUFFER 512
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 
-
 uint8_t buf[HTTPSBUFSIZE];
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
@@ -133,8 +132,8 @@ int httpsReadFile( char * url,  char * dest, int maxChars) {
 
     esp_http_client_config_t config = {
         .url = url,
-        //.cert_pem = server_root_cert_pem_start,
-        .crt_bundle_attach = esp_crt_bundle_attach,
+        . cert_pem = server_root_cert_pem_start,
+      //  .crt_bundle_attach = esp_crt_bundle_attach,
         
         // .is_async = true,
         // .timeout_ms = 5000,
@@ -170,7 +169,8 @@ int httpsReadFile(const httpsRegParams_t *httpsRegParams)
 
     esp_http_client_config_t config = {
         .url = httpsRegParams->httpsURL,          
-        .crt_bundle_attach = esp_crt_bundle_attach,
+       // .crt_bundle_attach = esp_crt_bundle_attach,
+        . cert_pem = server_root_cert_pem_start,
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);

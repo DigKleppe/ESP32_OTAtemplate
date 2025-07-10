@@ -22,6 +22,7 @@
 #include "wifiConnect.h"
 #include "settings.h"
 #include "updateTask.h"
+#include "clockTask.h"
 #include <esp_err.h>
 
 esp_err_t init_spiffs(void);
@@ -64,8 +65,10 @@ extern "C" void app_main(void) {
 	strcpy( wifiSettings.pwd, "Yellowstone1999");
 
 	strcpy(wifiSettings.upgradeServer, "digkleppe.nl" );
-	strcpy(wifiSettings.upgradeURL, "https://digkleppe.nl/OTA");
+	strcpy(wifiSettings.upgradeURL, "https://digkleppe.nl/firmware/OTA");
 	strcpy(wifiSettings.upgradeFileName,"ESP32_OTAtemplate.bin");
+
+	//strcpy(wifiSettings.firmwareVersion,"xxx");
 
 	xTaskCreate(&blinkTask, "blink", 8192, NULL, 5, NULL);
 
@@ -74,7 +77,13 @@ extern "C" void app_main(void) {
 	do {
 		vTaskDelay(100);
 	} while (connectStatus != IP_RECEIVED);
+	xTaskCreate(clockTask, "clock", 4 * 1024, NULL, 0, NULL);
 
+	// do {
+	// 	vTaskDelay(100);
+	// } while (!clockSynced);
+
+	
 	xTaskCreate(&updateTask, "updateTask",2* 8192, NULL, 5, &updateTaskh);
 
 	while (1) {

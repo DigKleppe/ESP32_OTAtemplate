@@ -31,73 +31,19 @@ typedef struct {
 	char *dest;
 } versionInfoParam_t;
 
-void getNewVersionTask(void *pvParameter) {
-	esp_err_t err;
-	char updateURL[96];
-
-	httpsMssg_t mssg;
-	bool rdy = false;
-	httpsRegParams_t httpsRegParams;
-	versionInfoParam_t *versionInfoParam = (versionInfoParam_t*) pvParameter;
-	getNewVersionTaskFinished = false;
-
-	httpsRegParams.httpsServer = wifiSettings.upgradeServer;
-	strcpy(updateURL, wifiSettings.upgradeURL);
-	strcat(updateURL, "//");
-	strcat(updateURL, versionInfoParam->infoFileName);
-
-
-	httpsRegParams.httpsURL = updateURL;
-	httpsRegParams.destbuffer = (uint8_t*) versionInfoParam->dest;
-	httpsRegParams.maxChars = MAX_STORAGEVERSIONSIZE - 1;
-
-	int data_read;
-
-	ESP_LOGI(TAG, "Starting getNewVersionTask");
-
-	xTaskCreate(&httpsGetRequestTask, "httpsGetRequestTask", 2 * 8192, (void*) &httpsRegParams, 5, NULL); // todo stack minimize
-	vTaskDelay(100 / portTICK_PERIOD_MS); // wait for messagebox to create and connection to make
-	xQueueSend(httpsReqRdyMssgBox, &mssg, 0);
-	if (xQueueReceive(httpsReqMssgBox, (void*) &mssg, UPDATETIMEOUT)) {
-		if (mssg.len <= 0) {
-			ESP_LOGE(TAG, "error reading info file: %s", BINARY_INFO_FILENAME);
-			httpsRegParams.destbuffer[0] = -1;
-		} else {
-			if (mssg.len < MAX_STORAGEVERSIONSIZE) {
-				httpsRegParams.destbuffer[mssg.len] = 0;
-				ESP_LOGI(TAG, "New version: %s", httpsRegParams.destbuffer);
-			} else {
-				ESP_LOGE(TAG, "read version too long: %s", BINARY_INFO_FILENAME);
-				httpsRegParams.destbuffer[0] = -1;
-			}
-		}
-	}
-	else {
-		ESP_LOGE(TAG, "Timeout reading new version info: %s", BINARY_INFO_FILENAME);
-	}
-
-	while (mssg.len > 0) { // wait for httpsGetRequestTask to finish
-		xQueueSend(httpsReqRdyMssgBox, &mssg, 0);
-		xQueueReceive(httpsReqMssgBox, (void*) &mssg, UPDATETIMEOUT); // wait for httpsGetRequestTask to end
-	};
-
-	getNewVersionTaskFinished = true;
-	(void) vTaskDelete(NULL);
-}
 
 esp_err_t getNewVersion(char *infoFileName, char *newVersion) {
+	char url[96];
+	int len;
 
-	getNewVersionTaskFinished = false;
+	strcpy(url, wifiSettings.upgradeURL);
+	strcat(url, "/");
+	strcat(url, infoFileName);
 
-	versionInfoParam_t versionInfoParam;
-	versionInfoParam.infoFileName = infoFileName;
-	versionInfoParam.dest = newVersion;
-
-	xTaskCreate(&getNewVersionTask, "getNewVersionTask", 8192, (void*) &versionInfoParam, 5, NULL);
-
-	while (!getNewVersionTaskFinished)
-		vTaskDelay(100 / portTICK_PERIOD_MS);
-	if ((int8_t) newVersion[0] != -1)
+	len = httpsReadFile( url, newVersion, MAX_STORAGEVERSIONSIZE-1);
+	newVersion[len] = 0;
+	
+	if (len >0)
 		return ESP_OK;
 	else
 		return ESP_FAIL;

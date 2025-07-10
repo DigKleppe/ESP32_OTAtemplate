@@ -12,7 +12,7 @@
 #define BINARY_INFO_FILENAME "firmWareVersion.txt"
 #define SPIFFS_INFO_FILENAME "storageVersion.txt"
 
-#define UPDATETIMEOUT (CONFIG_OTA_RECV_TIMEOUT * 1000 * 36000 / portTICK_PERIOD_MS) //
+#define UPDATETIMEOUT (24 * 60 * 60) //seconds 
 
 #define BUFFSIZE 		1024 // buffer size for http
 

@@ -21,7 +21,7 @@
 #include "settings.h"
 #include "wifiConnect.h"
 
-// #define DOWNLOAD_ONLY
+//#define DOWNLOAD_ONLY
 
 static uint8_t ota_write_data[BUFFSIZE];
 
@@ -46,7 +46,7 @@ void updateFirmwareTask(void *pvParameter) {
 
 	httpsRegParams.httpsServer = wifiSettings.upgradeServer;
 	strcpy(updateURL, wifiSettings.upgradeURL);
-	strcat(updateURL, "//");
+	strcat(updateURL, "/");
 	strcat(updateURL, wifiSettings.upgradeFileName);
 	httpsRegParams.httpsURL = updateURL;
 	httpsRegParams.destbuffer = ota_write_data;
@@ -113,8 +113,9 @@ void updateFirmwareTask(void *pvParameter) {
 								esp_ota_abort(update_handle);
 								err = !ESP_OK;
 							}
-#endif
-							ESP_LOGI(TAG, "esp_ota_begin succeeded");
+							else
+								ESP_LOGI(TAG, "esp_ota_begin succeeded");
+#endif								
 
 						} else {
 							ESP_LOGE(TAG, "received failed");

@@ -31,8 +31,8 @@ extern QueueHandle_t httpsReqMssgBox;
 extern QueueHandle_t httpsReqRdyMssgBox;
 void httpsGetRequestTask(void *pvparameters);
 
-
-
+int httpsReadFile(const httpsRegParams_t *httpsRegParams);
+int httpsReadFile(char * url, char * dest, int maxChars);
 
 
 #endif /* COMPONENTS_HTTP_INCLUDE_HTTPSREQUEST_H_ */

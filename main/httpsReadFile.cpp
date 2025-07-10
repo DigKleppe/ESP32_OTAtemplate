@@ -1,18 +1,3 @@
-/*
- * HTTPS GET Example using plain Mbed TLS sockets
- *
- * Contacts the howsmyssl.com API via TLS v1.2 and reads a JSON
- * response.
- *
- * Adapted from the ssl_client1 example in Mbed TLS.
- *
- * SPDX-FileCopyrightText: The Mbed TLS Contributors
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * SPDX-FileContributor: 2015-2022 Espressif Systems (Shanghai) CO LTD
- */
-
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,10 +19,10 @@
 #include "esp_system.h"
 
 #include "esp_http_client.h"
-#include "httpsRequest.h"
+#include "httpsReadFile.h"
 
 
-static const char *TAG = "httpsRequest";
+static const char *TAG = "httpsReadFile";
 
 extern const char server_root_cert_pem_start[] asm("_binary_ca_cert_pem_start");
 extern const char server_root_cert_pem_end[] asm("_binary_ca_cert_pem_end");
@@ -148,8 +133,9 @@ int httpsReadFile( char * url,  char * dest, int maxChars) {
 
     esp_http_client_config_t config = {
         .url = url,
+        //.cert_pem = server_root_cert_pem_start,
         .crt_bundle_attach = esp_crt_bundle_attach,
-        // .cert_pem = server_root_cert_pem_start,
+        
         // .is_async = true,
         // .timeout_ms = 5000,
     };
@@ -173,6 +159,7 @@ int httpsReadFile( char * url,  char * dest, int maxChars) {
     return read_len;
 }
 
+
 int httpsReadFile(const httpsRegParams_t *httpsRegParams) 
 {
  	httpsMssg_t mssg;
@@ -182,11 +169,8 @@ int httpsReadFile(const httpsRegParams_t *httpsRegParams)
     }
 
     esp_http_client_config_t config = {
-        .url = httpsRegParams->httpsURL, //         "https://digkleppe.nl/firmware/OTA/storage.bin",
+        .url = httpsRegParams->httpsURL,          
         .crt_bundle_attach = esp_crt_bundle_attach,
-        // .cert_pem = server_root_cert_pem_start,
-        // .is_async = true,
-        // .timeout_ms = 5000,
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
@@ -209,8 +193,7 @@ int httpsReadFile(const httpsRegParams_t *httpsRegParams)
             read_len = -1;
          }    
         total_read_len += read_len;
-      //  ESP_LOGI(TAG, "read_len = %d", read_len);
-    } while ( read_len > 0 );
+     } while ( read_len > 0 );
 
     ESP_LOGI(TAG, "HTTP Stream reader Status = %d, content_length = %"PRId64,
                     esp_http_client_get_status_code(client),

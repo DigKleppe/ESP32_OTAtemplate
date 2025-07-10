@@ -16,7 +16,7 @@
 #include "updateSpiffsTask.h"
 #include "wifiConnect.h"
 #include "settings.h"
-#include "httpsRequest.h"
+#include "httpsReadFile.h"
 
 static const char *TAG = "updateSPIFFSTask";
 

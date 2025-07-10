@@ -17,7 +17,7 @@
 #include "freertos/task.h"
 #include "updateTask.h"
 
-#include "httpsRequest.h"
+#include "httpsReadFile.h"
 #include "settings.h"
 #include "wifiConnect.h"
 
@@ -72,7 +72,6 @@ void updateFirmwareTask(void *pvParameter) {
 	while (!rdy && (err == ESP_OK)) {
 		xQueueSend(httpsReqRdyMssgBox, &mssg, 0);
 		if (xQueueReceive(httpsReqMssgBox, (void *)&mssg, (CONFIG_OTA_RECV_TIMEOUT / portTICK_PERIOD_MS))) {
-
 			data_read = mssg.len;
 			block++;
 			//	ESP_LOGI(TAG, "Reading block %d bytes %d ", block ,data_read);

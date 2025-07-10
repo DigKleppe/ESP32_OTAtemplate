@@ -1,5 +1,5 @@
 /*
- * getNewFirmWareVersionTask.cpp
+ * updateTask.cpp
  *
  *  Created on: Jan 8, 2024
  *      Author: dig
@@ -16,7 +16,7 @@
 
 #include "wifiConnect.h"
 #include "settings.h"
-#include "httpsRequest.h"
+#include "httpsReadFile.h"
 #include "updateTask.h"
 #include "updateFirmWareTask.h"
 #include "updateSpiffsTask.h"
@@ -55,13 +55,11 @@ void updateTask(void *pvParameter) {
 	TaskHandle_t updateFWTaskh;
 	TaskHandle_t updateSPIFFSTaskh;
 
-	// if ((strcmp(wifiSettings.upgradeFileName, CONFIG_FIRMWARE_UPGRADE_FILENAME) != 0) || (strcmp(wifiSettings.upgradeURL, CONFIG_DEFAULT_FIRMWARE_UPGRADE_URL) != 0)) {
-	// 	strcpy(wifiSettings.upgradeFileName, CONFIG_FIRMWARE_UPGRADE_FILENAME);
-	// 	strcpy(wifiSettings.upgradeURL, CONFIG_DEFAULT_FIRMWARE_UPGRADE_URL);
-	// 	saveSettings();
-	// todo
-	// }
-
+	if ((strcmp(wifiSettings.upgradeFileName, CONFIG_FIRMWARE_UPGRADE_FILENAME) != 0) || (strcmp(wifiSettings.upgradeURL, CONFIG_DEFAULT_FIRMWARE_UPGRADE_URL) != 0)) {
+		strcpy(wifiSettings.upgradeFileName, CONFIG_FIRMWARE_UPGRADE_FILENAME);
+		strcpy(wifiSettings.upgradeURL, CONFIG_DEFAULT_FIRMWARE_UPGRADE_URL);
+		saveSettings();
+	}
 
 	const esp_partition_t *update_partition = NULL;
 	const esp_partition_t *configured = esp_ota_get_boot_partition();

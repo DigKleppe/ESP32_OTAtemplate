@@ -1,2 +1,1 @@
-#scp  firmWareVersion.txt  build/ESP32_OTAtemplate.bin storageVersion.txt  build/storage.bin root@digkleppe.nl:../../home/firmware/OTA/
-scp  firmWareVersion.txt  build/ESP32_OTAtemplate.bin storageVersion.txt  build/storage.bin root@85.215.168.155:../../home/firmware/OTA/
+scp  firmWareVersion.txt  build/ESP32_OTAtemplate.bin storageVersion.txt  build/storage.bin root@digkleppe.nl:/home/firmware/OTA/

@@ -55,8 +55,12 @@ void updateFirmwareTask(void *pvParameter) {
 	const esp_partition_t *configured = esp_ota_get_boot_partition();
 	const esp_partition_t *running = esp_ota_get_running_partition();
 	const esp_partition_t *update_partition = esp_ota_get_next_update_partition(NULL);
-	assert(update_partition != NULL);
-
+	if (update_partition == NULL) {
+		ESP_LOGE(TAG, "update_partition not valid");
+		updateStatus = UPDATE_ERROR;
+		vTaskDelete( NULL);	
+	}
+	
 	if (configured != running) {
 		ESP_LOGW(TAG, "Configured OTA boot partition at offset 0x%08" PRIx32 ", but running from offset 0x%08" PRIx32, configured->address,
 				 running->address);
@@ -65,7 +69,9 @@ void updateFirmwareTask(void *pvParameter) {
 	ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08" PRIx32 ")", running->type, running->subtype, running->address);
 
 	ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%" PRIx32, update_partition->subtype, update_partition->address);
-
+	if ( httpsReqRdyMssgBox) {
+		xQueueSend(httpsReqRdyMssgBox, &mssg, 0);
+	}
 	xTaskCreate(&httpsGetRequestTask, "httpsGetRequestTask", 8192, (void *)&httpsRegParams, 5, NULL);
 	vTaskDelay(10);
 

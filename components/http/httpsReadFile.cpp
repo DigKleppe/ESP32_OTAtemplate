@@ -128,80 +128,94 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-int httpsReadFile( char * url,  char * dest, int maxChars) {
 
-    esp_http_client_config_t config = {
-        .url = url,
-        . cert_pem = server_root_cert_pem_start,
-      //  .crt_bundle_attach = esp_crt_bundle_attach,
-        
-        // .is_async = true,
-        // .timeout_ms = 5000,
-    };
+int httpsReadFile(char *url, char *dest, int maxChars) {
+	int read_len =0, content_length, status;
 
-    esp_http_client_handle_t client = esp_http_client_init(&config);
-    esp_err_t err;
-    if ((err = esp_http_client_open(client, 0)) != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
-        return -1;
-    }
-    int content_length =  esp_http_client_fetch_headers(client);
-    int read_len;
+	esp_http_client_config_t config = {
+		.url = url, 
+        .cert_pem = server_root_cert_pem_start,
+		
+	};
 
-    read_len = esp_http_client_read(client, dest, maxChars);
-    
-    ESP_LOGI(TAG, "HTTP Stream reader Status = %d, content_length = %"PRId64,
-                    esp_http_client_get_status_code(client),
-                    esp_http_client_get_content_length(client));
-    esp_http_client_close(client);
-    esp_http_client_cleanup(client);
-    return read_len;
+	esp_http_client_handle_t client = esp_http_client_init(&config);
+	esp_err_t err;
+	if ((err = esp_http_client_open(client, 0)) != ESP_OK) {
+		ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
+		return -1;
+	}
+	content_length = esp_http_client_fetch_headers(client);
+	read_len = esp_http_client_read(client, dest, maxChars);
+
+	status = esp_http_client_get_status_code(client);
+	ESP_LOGI(TAG, "HTTP Stream reader Status = %d, content_length = %" PRId64,
+             status, esp_http_client_get_content_length(client));
+
+	if (content_length > maxChars) 
+        read_len = -1;
+	if ((status > 300) || (status < 200))
+	    read_len = -1;
+
+	if ( read_len < 0 )
+		*dest = 0;
+
+	esp_http_client_close(client);
+	esp_http_client_cleanup(client);
+	return read_len;
 }
 
+int httpsReadFile(const httpsRegParams_t *httpsRegParams) {
+	httpsMssg_t mssg;
+	int read_len = 0, total_read_len = 0, content_length, status;
 
-int httpsReadFile(const httpsRegParams_t *httpsRegParams) 
-{
- 	httpsMssg_t mssg;
-    if (httpsRegParams->destbuffer == NULL) {
-        ESP_LOGE(TAG, "buffer not available");
-        return -1;
-    }
+	if (httpsRegParams->destbuffer == NULL) {
+		ESP_LOGE(TAG, "buffer not available");
+		return -1;
+	}
 
-    esp_http_client_config_t config = {
-        .url = httpsRegParams->httpsURL,          
-       // .crt_bundle_attach = esp_crt_bundle_attach,
-        . cert_pem = server_root_cert_pem_start,
-    };
+	esp_http_client_config_t config = {
+		.url = httpsRegParams->httpsURL,
+		// .crt_bundle_attach = esp_crt_bundle_attach,
+		.cert_pem = server_root_cert_pem_start,
+	};
 
-    esp_http_client_handle_t client = esp_http_client_init(&config);
-    esp_err_t err;
-    if ((err = esp_http_client_open(client, 0)) != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
-        return -1;
-    }
-    int content_length =  esp_http_client_fetch_headers(client);
-    int total_read_len = 0, read_len;
+	esp_http_client_handle_t client = esp_http_client_init(&config);
+	esp_err_t err;
+	if ((err = esp_http_client_open(client, 0)) != ESP_OK) {
+		ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
+		return -1;
+	}
+	content_length = esp_http_client_fetch_headers(client);
+	status = esp_http_client_get_status_code(client);
+	ESP_LOGI(TAG, "HTTP Stream reader Status = %d, content_length = %" PRId64, status, esp_http_client_get_content_length(client));
 
-    do { 
-        if ( xQueueReceive (httpsReqRdyMssgBox, &mssg,MSSGBOX_TIMEOUT)) {    
-            read_len = esp_http_client_read(client, (char *) httpsRegParams->destbuffer, httpsRegParams->maxChars);
-             mssg.len = read_len;
-            xQueueSend(httpsReqMssgBox, &mssg, MSSGBOX_TIMEOUT); 
-        }
-        else {
-            ESP_LOGE(TAG, "Timeout httpsReqRdyMssgBox");
-            read_len = -1;
-         }    
-        total_read_len += read_len;
-     } while ( read_len > 0 );
+	if ((status > 300) || (status < 200)) {
+		total_read_len = -1;
+		ESP_LOGE(TAG, "HTTP Stream reader Status = %d", status);
+	}
 
-    ESP_LOGI(TAG, "HTTP Stream reader Status = %d, content_length = %"PRId64,
-                    esp_http_client_get_status_code(client),
-                    esp_http_client_get_content_length(client));
-    esp_http_client_close(client);
-    esp_http_client_cleanup(client);
-    return total_read_len;
+	else {
+		do {
+			if (xQueueReceive(httpsReqRdyMssgBox, &mssg, MSSGBOX_TIMEOUT)) {
+				read_len = esp_http_client_read(client, (char *)httpsRegParams->destbuffer, httpsRegParams->maxChars);
+				mssg.len = read_len;
+				xQueueSend(httpsReqMssgBox, &mssg, MSSGBOX_TIMEOUT);
+			} else {
+				ESP_LOGE(TAG, "Timeout httpsReqRdyMssgBox");
+				read_len = -1;
+			}
+			total_read_len += read_len;
+		} while (read_len > 0);
+	}
+
+	//	ESP_LOGI(TAG, "HTTP Stream reader Status = %d, content_length = %" PRId64, esp_http_client_get_status_code(client),
+	//			 esp_http_client_get_content_length(client));
+
+	esp_http_client_close(client);
+	esp_http_client_cleanup(client);
+	return total_read_len;
 }
+
 
 
 void httpsGetRequestTask(void *pvparameters) {

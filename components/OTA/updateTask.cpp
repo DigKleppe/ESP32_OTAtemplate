@@ -81,7 +81,7 @@ void updateTask(void *pvParameter) {
 			} else
 				ESP_LOGI(TAG, "Firmware up to date: %s", newVersion);
 		} else
-			ESP_LOGI(TAG, "Reading New firmware info failed");
+			ESP_LOGE(TAG, "Reading New firmware info failed");
 
 		if (doUpdate) {
 			ESP_LOGI(TAG, "Updating firmware to version: %s", newVersion);
@@ -97,7 +97,7 @@ void updateTask(void *pvParameter) {
 				vTaskDelay(100 / portTICK_PERIOD_MS);
 				esp_restart();
 			} else {
-				ESP_LOGI(TAG, "Update firmware failed!");
+				ESP_LOGE(TAG, "Update firmware failed!");
 				vTaskDelay (10000/portTICK_PERIOD_MS);
 			}
 		}
@@ -130,8 +130,8 @@ void updateTask(void *pvParameter) {
 			} else
 				ESP_LOGI(TAG, "Update SPIFFS failed!");
 		}
-		vTaskDelay(CONFIG_CHECK_FIRMWARWE_UPDATE_INTERVAL * 60 * 60 * 1000 / portTICK_PERIOD_MS);
-	//	vTaskDelay(10000 / portTICK_PERIOD_MS);
+	//	vTaskDelay(CONFIG_CHECK_FIRMWARWE_UPDATE_INTERVAL * 60 * 60 * 1000 / portTICK_PERIOD_MS);
+		vTaskDelay(10000 / portTICK_PERIOD_MS);
 	}
 }
 

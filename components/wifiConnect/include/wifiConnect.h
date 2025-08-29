@@ -8,39 +8,40 @@
 #ifndef WIFI_CONNECT_H_
 #define WIFI_CONNECT_H_
 
-#define MAX_STORAGEVERSIONSIZE 16
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_wifi.h"
 #include "sdkconfig.h"
 #include "esp_err.h"
 #include "esp_netif.h"
-#if CONFIG_EXAMPLE_CONNECT_ETHERNET
-#include "esp_eth.h"
-#endif
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define MAX_STORAGEVERSIONSIZE 16
 
+
+#define ESP_WIFI_SSID "test"
+#define ESP_WIFI_PASS "Yellowstone"
 
 typedef struct {
 	char SSID[33];
 	char pwd[64];
 	esp_ip4_addr_t ip4Address;
 	esp_ip4_addr_t gw;
-	char upgradeServer[32] ; // eg www.github.com
-	char upgradeURL[128]; 	 // eg  https://digkleppe.github.io//OTAtemplate
-	char upgradeFileName[32]; // name of firmware
+	char upgradeServer[32] ; 
+	char upgradeURL[128]; 	 
+	char upgradeFileName[32]; 
 	char firmwareVersion[MAX_STORAGEVERSIONSIZE]; // holding current app version
 	char SPIFFSversion[MAX_STORAGEVERSIONSIZE];	// holding current spiffs version
 	bool updated;
 }wifiSettings_t;
 
+
 extern wifiSettings_t wifiSettings;
 extern wifiSettings_t wifiSettingsDefaults;
-extern char ipstr[];
+extern char myIpAddress[];
 
 #define STATIC_NETMASK_ADDR "255.255.255.0"
 #define DEFAULT_IPADDRESS 	"192.168.2.50"
@@ -49,26 +50,21 @@ extern char ipstr[];
 extern bool DHCPoff;
 extern bool DNSoff;
 extern bool fileServerOff;
-
-typedef enum { CONNECTING, CONNECTED, WPS_ACTIVE, SMARTCONFIG_ACTIVE, IP_RECEIVED} connectStatus_t;
+typedef enum {
+	CONNECTING,
+	CONNECT_TIMEOUT,
+	CONNECTED,
+	SMARTCONFIG_ACTIVE,
+	WPS_ACTIVE,
+	WPS_SUCCESS,
+	WPS_FAILED,
+	WPS_TIMEOUT,
+	IP_RECEIVED
+} connectStatus_t;
 
 extern volatile  connectStatus_t connectStatus;
 
 void wifiConnect (void);
-
-
-/* Common functions for protocol examples, to establish Wi-Fi or Ethernet connection.
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
- */
-
-// protocol examples common.h
-
-
 
 #if !CONFIG_IDF_TARGET_LINUX
 #if CONFIG_EXAMPLE_CONNECT_WIFI
@@ -88,26 +84,8 @@ void wifiConnect (void);
 #define get_netif() get_netif_from_desc(EXAMPLE_NETIF_DESC_STA)
 #endif
 
-/**
- * @brief Configure Wi-Fi or Ethernet, connect, wait for IP
- *
- * This all-in-one helper function is used in protocols examples to
- * reduce the amount of boilerplate in the example.
- *
- * It is not intended to be used in real world applications.
- * See examples under examples/wifi/getting_started/ and examples/ethernet/
- * for more complete Wi-Fi or Ethernet initialization code.
- *
- * Read "Establishing Wi-Fi or Ethernet Connection" section in
- * examples/protocols/README.md for more information about this function.
- *
- * @return ESP_OK on successful connection
- */
-//esp_err_t connect(void);
 
-/**
- * Counterpart to connect, de-initializes Wi-Fi or Ethernet
- */
+int getRssi(void);  
 esp_err_t disconnect(void);
 
 /**

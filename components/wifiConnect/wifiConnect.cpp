@@ -166,39 +166,12 @@ int getRssi(void) {
 	}
 }
 
-//#include "lwip/init.h"
-// #include "lwip/netif.h"
-// #include "lwip/dns.h"
-// #include "lwip/apps/sntp.h"
-
-// // Configure network interface with static IP
-// void configure_network(void) {
-//     struct netif *netif = &your_netif_struct; // Your network interface
-//     ip4_addr_t ipaddr, netmask, gw, dns1, dns2;
-    
-//     // Set static IP configuration
-//     IP4_ADDR(&ipaddr, 192, 168, 1, 100);    // Your static IP
-//     IP4_ADDR(&netmask, 255, 255, 255, 0);   // Your netmask
-//     IP4_ADDR(&gw, 192, 168, 1, 1);          // Your gateway
-//     IP4_ADDR(&dns1, 8, 8, 8, 8);            // Primary DNS (Google)
-//     IP4_ADDR(&dns2, 8, 8, 4, 4);            // Secondary DNS (Google)
-    
-//     // Apply network configuration
-//     netif_set_addr(netif, &ipaddr, &netmask, &gw);
-//     netif_set_up(netif);
-    
-//     // Set DNS servers
-//     dns_setserver(0, &dns1);
-//     dns_setserver(1, &dns2);
-// }
-
-
 static esp_err_t example_set_dns_server(esp_netif_t *netif, uint32_t addr, esp_netif_dns_type_t type)
 {
     if (addr && (addr != IPADDR_NONE)) {
         esp_netif_dns_info_t dns;
         dns.ip.u_addr.ip4.addr = addr;
-        dns.ip.type = IPADDR_TYPE_V4;
+        dns.ip.type = ESP_IPADDR_TYPE_V4;
         ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, type, &dns));
     }
     return ESP_OK;
@@ -226,32 +199,7 @@ static void setStaticIp(esp_netif_t *netif) {
 		ESP_LOGE(TAG, "Failed to set ip info");
 		return;
 	}
-//	 netif_set_up((netif *) netif);
-//     // Set DNS servers
 
-// 	IP4_ADDR(&dns1, 8, 8, 8, 8);            // Primary DNS (Google)
-// 	IP4_ADDR(&dns2, 8, 8, 4, 4);            // Secondary DNS (Google)
-
-//     //  dns_setserver(0,(ip_addr_t *) &dns1);
-//     //  dns_setserver(1,(ip_addr_t *) &dns2);
-
-// 	 esp_netif_dns_info_t dnsinfo1,  dnsinfo2;
-
-// //	dnsinfo1.ip.u_addr.ip4 =  (esp_ip4_addr_t) dns1.addr;
-// 	dnsinfo1.ip.u_addr.ip4 = (esp_ip4_addr_t ) wifiSettings.gw;
-// 	dnsinfo2.ip.u_addr.ip4 = (esp_ip4_addr_t ) dns2.addr;
-
-// 	//   ESP_LOGD(TAG, "Success to set static ip: %s, netmask: %s, gw: %s", EXAMPLE_STATIC_IP_ADDR, EXAMPLE_STATIC_NETMASK_ADDR,
-// 	//   EXAMPLE_STATIC_GW_ADDR);
-// 	if ( esp_netif_set_dns_info(netif, ESP_NETIF_DNS_MAIN, &dnsinfo1) != ESP_OK)
-// 		ESP_LOGE(TAG, "Failed to set dns1 info");
-
-// 	if ( esp_netif_set_dns_info(netif, ESP_NETIF_DNS_BACKUP, &dnsinfo2) != ESP_OK)
-// 		ESP_LOGE(TAG, "Failed to set dns2 info");
-
-// }
-
-//	ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, EXAMPLE_BACKUP_DNS_SERVER, dnsinfo2));
 	if (example_set_dns_server(netif, (uint32_t) wifiSettings.gw.addr, ESP_NETIF_DNS_MAIN) != ESP_OK)
 		ESP_LOGE(TAG, "Failed to set dns main");
 	if (example_set_dns_server(netif, ipaddr_addr("8,8,8,8"), ESP_NETIF_DNS_BACKUP) != ESP_OK)
@@ -259,9 +207,6 @@ static void setStaticIp(esp_netif_t *netif) {
 
 	if (example_set_dns_server(netif, ipaddr_addr("8,8,4,4"), ESP_NETIF_DNS_FALLBACK) != ESP_OK)
 		ESP_LOGE(TAG, "Failed to set dns fallback");
- 	
-		// ESP_ERROR_CHECK(example_set_dns_server(netif, ipaddr_addr(EXAMPLE_MAIN_DNS_SERVER), ESP_NETIF_DNS_MAIN));
- 	// ESP_ERROR_CHECK(example_set_dns_server(netif, ipaddr_addr(EXAMPLE_BACKUP_DNS_SERVER), ESP_NETIF_DNS_BACKUP));
 }
 
 #ifdef CONFIG_WPS_ENABLED
@@ -471,6 +416,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
 				} else {
 					wifiSettings.ip4Address = (esp_ip4_addr_t)((addr & 0x00FFFFFF) + (CONFIG_FIXED_LAST_IP_DIGIT << 24));
 					sprintf(myIpAddress, IPSTR, IP2STR(&wifiSettings.ip4Address));
+					wifiSettings.gw = event->ip_info.gw;
 					saveSettings();
 					ESP_LOGI(TAG, "Set static IP to %s , reconnecting", (myIpAddress));
 					setStaticIp(s_sta_netif);
